@@ -51,10 +51,10 @@ class Player:
     name = ""
     state = STATE_CHAT
 
-    def __init__(self, id, name):
+    def __init__(self, id, name, state=STATE_CHAT):
         self.id = id
         self.name = name
-        self.state = STATE_CHAT
+        self.state = state
 
     def message_from_self(self, message):
         return u"You say: \"{}\"".format(message)
@@ -65,12 +65,8 @@ class Player:
 
 def get_player(id):
     ds = datastore.Client()
-    query = ds.query(kind='Player')
-    query.add_filter('player_id', '=', id)
-    r = list(query.fetch())
-    if len(r):
-        return Player(r[0].player_id, r[0].name)
-    return None
+    p = ds.get(key=ds.key('Player', player.id))
+    return Player(p['player_id'], p['name'], p['state'])
 
 def get_all_players():
     ds = datastore.Client()
@@ -78,14 +74,13 @@ def get_all_players():
     r = list(query.fetch())
     players = {}
     for p in r:
-        player = Player(p[0].player_id, p[0].name)
+        player = Player(p['player_id'], p['name'], p['state'])
         players[player.id] = player
     return players
 
 def update_player(player):
     ds = datastore.Client()
-    key = ds.key('Player', player.id)
-    p = datastore.Entity(key=ds.key('Player', player.id))
+    p = ds.get(ds.key('Player', player.id))
     p.update({
         'state': player.state
     })
