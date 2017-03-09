@@ -72,6 +72,16 @@ def get_player(id):
         return Player(r[0].player_id, r[0].name)
     return None
 
+def get_all_players():
+    ds = datastore.Client()
+    query = ds.query(kind='Player')
+    r = list(query.fetch())
+    players = {}
+    for p in r:
+        player = Player(p[0].player_id, p[0].name)
+        players[player.id] = player
+    return players
+
 def update_player(player):
     ds = datastore.Client()
     key = ds.key('Player', player.id)
@@ -84,6 +94,7 @@ def update_player(player):
 # MAIN FILTER
 def main_filter(bot, update):
     current_player = get_player(update.message.from_user.id)
+    players = get_all_players()
     if current_player == None: return
 
     if current_player.state == STATE_CHAT:
