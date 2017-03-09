@@ -14,16 +14,13 @@ import util
 app = Flask(__name__)
 
 TOKEN = '330715814:AAFa4y4MFhfoU7yIrS5owBfuMkpxsLKjmaQ'
-
-@app.route('/')
-def index():
-    return ".", 200, {'Content-Type': 'text/plain; charset=utf-8'}
+HOST = 'https://telegramrpgbot.appspot.com'
 
 @app.route('/HOOK', methods=['POST'])
 def webhook_handler():
     if request.method == "POST":
         # retrieve the message in JSON and then transform it to Telegram object
-        update = Update.de_json(request.get_json(force=True), bot)
+        update = Update.de_json(request.get_json(force=True), updater.bot)
         updater.dispatcher.process_update(update)
     return 'ok'
 
@@ -34,11 +31,16 @@ def set_webhook():
     updater.dispatcher.add_handler(CommandHandler('hello', hello))
     updater.dispatcher.add_handler(CommandHandler('dice', dice, pass_args=True))
     updater.dispatcher.add_handler(MessageHandler(Filters.text, main_filter))
-    s = updater.bot.setWebhook('https://fudgerpgbot.appspot.com/HOOK')
+    s = updater.bot.setWebhook(HOST+'/HOOK')
     if s:
         return "webhook setup ok"
     else:
         return "webhook setup failed"
+
+@app.route('/')
+def index():
+    return ".", 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
 
 # CONSTANTS
 STATE_CHAT = 0
