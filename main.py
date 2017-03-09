@@ -27,6 +27,19 @@ def webhook_handler():
         updater.dispatcher.process_update(update)
     return 'ok'
 
+@app.route('/set_webhook', methods=['GET', 'POST'])
+def set_webhook():
+    updater.dispatcher.add_handler(CommandHandler('newchar', newchar))
+    updater.dispatcher.add_handler(CommandHandler('start', start))
+    updater.dispatcher.add_handler(CommandHandler('hello', hello))
+    updater.dispatcher.add_handler(CommandHandler('dice', dice, pass_args=True))
+    updater.dispatcher.add_handler(MessageHandler(Filters.text, main_filter))
+    s = updater.bot.setWebhook('https://fudgerpgbot.appspot.com/HOOK')
+    if s:
+        return "webhook setup ok"
+    else:
+        return "webhook setup failed"
+
 # CONSTANTS
 STATE_CHAT = 0
 STATE_CREATE_CHAR = 10
@@ -114,11 +127,3 @@ def dice(bot, update, args):
 
 global updater
 updater = Updater(TOKEN)
-updater.dispatcher.add_handler(CommandHandler('newchar', newchar))
-updater.dispatcher.add_handler(CommandHandler('start', start))
-updater.dispatcher.add_handler(CommandHandler('hello', hello))
-updater.dispatcher.add_handler(CommandHandler('dice', dice, pass_args=True))
-updater.dispatcher.add_handler(MessageHandler(Filters.text, main_filter))
-updater.bot.setWebhook('https://fudgerpgbot.appspot.com/HOOK')
-#updater.start_polling()
-updater.idle()
