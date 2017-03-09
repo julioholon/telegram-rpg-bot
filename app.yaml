@@ -1,13 +1,6 @@
-runtime: python27
-api_version: 1
-threadsafe: yes
+runtime: python
+env: flex
+entrypoint: gunicorn -b :$PORT main:app
 
-handlers:
-- url: .*
-  script: bot_gae.app
-
-libraries:
-- name: webapp2
-  version: "2.5.2"
-- name: ssl
-  version: latest
+runtime_config:
+  python_version: 3
