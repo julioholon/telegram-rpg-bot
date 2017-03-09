@@ -84,6 +84,7 @@ def update_player(player):
 # MAIN FILTER
 def main_filter(bot, update):
     current_player = get_player(update.message.from_user.id)
+    if current_player == None: return
 
     if current_player.state == STATE_CHAT:
         for player in players.values():
@@ -105,7 +106,6 @@ def main_filter(bot, update):
 def start(bot, update):
     player_id = update.message.from_user.id
     player_name = update.message.from_user.first_name
-    players[player_id] = Player(player_id, player_name)
 
     ds = datastore.Client()
     player = datastore.Entity(key=ds.key('Player', player_id))
@@ -120,6 +120,8 @@ def start(bot, update):
 
 def newchar(bot, update):
     current_player = get_player(update.message.from_user.id)
+    if current_player == None: return
+
     current_player.state = STATE_CREATE_CHAR
     update_player(current_player)
     button_list = [
