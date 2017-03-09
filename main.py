@@ -46,7 +46,6 @@ def index():
 STATE_CHAT = 0
 STATE_CREATE_CHAR = 10
 
-players = {}
 class Player:
     id = 0
     name = ""
@@ -64,9 +63,27 @@ class Player:
         return u"{} says: \"{}\"".format(self.name, message)
 
 
+def get_player(id):
+    ds = datastore.Client()
+    query = ds.query(kind='Player')
+    query.add_filter('player_id', '=', id)
+    r = list(query.fetch())
+    if len(r):
+        return Player(r[0].player_id, r[0].name)
+    return None
+
+def update_player(player):
+    ds = datastore.Client()
+    key = ds.key('Player', player.id)
+    p = datastore.Entity(key=ds.key('Player', player.id))
+    p.update({
+        'state': player.state
+    })
+    ds.put(p)
+
 # MAIN FILTER
 def main_filter(bot, update):
-    current_player = players[update.message.from_user.id]
+    current_player = get_player(update.message.from_user.id)
 
     if current_player.state == STATE_CHAT:
         for player in players.values():
@@ -80,6 +97,7 @@ def main_filter(bot, update):
 
         if message == "done":
             current_player.state=STATE_CHAT
+            update_player(current_player)
             bot.sendMessage(chat_id=current_player.id, text="Done.", reply_markup=ReplyKeyboardRemove())
 
 
@@ -89,11 +107,21 @@ def start(bot, update):
     player_name = update.message.from_user.first_name
     players[player_id] = Player(player_id, player_name)
 
+    ds = datastore.Client()
+    player = datastore.Entity(key=ds.key('Player', player_id))
+    player.update({
+        'player_id': player_id,
+        'name': player_name,
+        'state': STATE_CHAT
+    })
+    ds.put(player)
+
     update.message.reply_text('Welcome {}'.format(player_name))
 
 def newchar(bot, update):
-    current_player = players[update.message.from_user.id]
+    current_player = get_player(update.message.from_user.id)
     current_player.state = STATE_CREATE_CHAR
+    update_player(current_player)
     button_list = [
         KeyboardButton("add"),
         KeyboardButton("remove"),
