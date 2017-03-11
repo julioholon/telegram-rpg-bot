@@ -21,16 +21,16 @@ def webhook_handler():
     if request.method == "POST":
         # retrieve the message in JSON and then transform it to Telegram object
         update = Update.de_json(request.get_json(force=True), updater.bot)
+        updater.dispatcher.add_handler(CommandHandler('newchar', newchar))
+        updater.dispatcher.add_handler(CommandHandler('start', start))
+        updater.dispatcher.add_handler(CommandHandler('hello', hello))
+        updater.dispatcher.add_handler(CommandHandler('dice', dice, pass_args=True))
+        updater.dispatcher.add_handler(MessageHandler(Filters.text, main_filter))
         updater.dispatcher.process_update(update)
-    return 'ok'
+    return 'ok', 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/set_webhook', methods=['GET', 'POST'])
 def set_webhook():
-    updater.dispatcher.add_handler(CommandHandler('newchar', newchar))
-    updater.dispatcher.add_handler(CommandHandler('start', start))
-    updater.dispatcher.add_handler(CommandHandler('hello', hello))
-    updater.dispatcher.add_handler(CommandHandler('dice', dice, pass_args=True))
-    updater.dispatcher.add_handler(MessageHandler(Filters.text, main_filter))
     s = updater.bot.setWebhook(HOST+'/HOOK')
     if s:
         return "webhook setup ok"
